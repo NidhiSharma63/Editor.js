@@ -1,9 +1,9 @@
-import EditorJS from "@editorjs/editorjs";
 import React, { useEffect, useRef } from "react";
 
 import CheckList from "@editorjs/checklist";
 import Code from "@editorjs/code";
 import Delimiter from "@editorjs/delimiter";
+import EditorJS from "@editorjs/editorjs";
 import Embed from "@editorjs/embed";
 import Header from "@editorjs/header";
 import InlineCode from "@editorjs/inline-code";
@@ -15,19 +15,20 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import CustomImage from "./customImageTool";
 import { storage } from "./firebase";
+
 function App() {
   const editorRef = useRef(null);
 
   useEffect(() => {
     // Initialize the editor once when the component mounts
     const editor = new EditorJS({
+      data: JSON.parse(localStorage.getItem("text")),
       placeholder: "Let's write an awesome story!",
       holder: editorRef.current,
       onChange: (api, event) => {
         editor
           .save()
           .then((outputData) => {
-            console.log("output - onchange", outputData);
             localStorage.setItem("text", JSON.stringify(outputData));
           })
           .catch((error) => {
@@ -83,9 +84,10 @@ function App() {
           config: {
             uploader: {
               uploadByFile: async (file) => {
+                console.log(file);
                 return new Promise(async (resolve, reject) => {
                   try {
-                    const mountainsRef = ref(storage, `/images/mountains.jpg-${v4()}`);
+                    const mountainsRef = ref(storage, `/images/${file.name}-${v4()}`);
                     const snapshot = await uploadBytes(mountainsRef, file);
                     const url = await getDownloadURL(snapshot.ref);
 
